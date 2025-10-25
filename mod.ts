@@ -7,9 +7,14 @@
 type _Ok<T> = { readonly ok: true; value: T };
 type _Err<E> = { readonly ok: false; error: E };
 
+type MapFn<I, O> = (val: I) => O;
+
 type ResultBase<T, E> = {
 	okValue: () => T | undefined;
 	errValue: () => E | undefined;
+
+	mapOk: <O>(mapper: MapFn<T, O>) => Result<O, E>;
+	mapErr: <O>(mapper: MapFn<E, O>) => Result<T, O>;
 };
 
 function make_result<T, E>(that: _Ok<T> | _Err<E>): Result<T, E> {
@@ -17,6 +22,15 @@ function make_result<T, E>(that: _Ok<T> | _Err<E>): Result<T, E> {
 
 	self.okValue = () => (self.ok ? self.value : undefined);
 	self.errValue = () => (self.ok ? undefined : self.error);
+
+	self.mapOk = <O>(mapper: MapFn<T, O>) => {
+		if (self.ok) return Ok(mapper(self.value));
+		else return self as unknown as Result<O, E>;
+	};
+	self.mapErr = <O>(mapper: MapFn<E, O>) => {
+		if (self.ok) return self as unknown as Result<T, O>;
+		else return Err(mapper(self.error));
+	};
 
 	return self;
 }

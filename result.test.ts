@@ -31,6 +31,16 @@ Deno.test("result: errValue", () => {
 	assertEquals(x.errValue(), "Nothing here");
 });
 
+Deno.test("result: mapOk", () => {
+	assertEquals(Ok(1).mapOk((v) => `${v}`).okValue(), "1");
+	assertEquals(Err(1).mapOk((v) => `${v}`).okValue(), undefined);
+});
+
+Deno.test("result: mapErr", () => {
+	assertEquals(Err(1).mapErr((v) => `${v}`).errValue(), "1");
+	assertEquals(Ok(1).mapErr((v) => `${v}`).errValue(), undefined);
+});
+
 Deno.test("demo", () => {
 	function stringToNumberThrows(str: string): number {
 		const int = Number.parseInt(str);
