@@ -10,10 +10,14 @@ type _Err<E> = { readonly ok: false; error: E };
 type MapFn<I, O> = (val: I) => O;
 
 type ResultBase<T, E> = {
+	/** Gets the `Ok` value, or returns undefined if an `Err` */
 	okValue: () => T | undefined;
+	/** Gets the `Err` value, or returns undefined if an `Ok` */
 	errValue: () => E | undefined;
 
+	/** Calls the `mapper` function with the value of `Ok` if the `Result` is one, and returns a new `Result` with the value returned by the function. */
 	mapOk: <O>(mapper: MapFn<T, O>) => Result<O, E>;
+	/** Calls the `mapper` function with the value of `Err` if the `Result` is one, and returns a new `Result` with the value returned by the function. */
 	mapErr: <O>(mapper: MapFn<E, O>) => Result<T, O>;
 };
 
@@ -35,14 +39,17 @@ function make_result<T, E>(that: _Ok<T> | _Err<E>): Result<T, E> {
 	return self;
 }
 
+/** Type effectively returned by `Ok()`, with `.ok` being `true` */
 export type Ok<T, E> = ResultBase<T, E> & _Ok<T>;
+/** Type effectively returned by `Err()`, with `.ok` being `false` */
 export type Err<T, E> = ResultBase<T, E> & _Err<E>;
-
+/** Union of `Ok` and `Err` types. */
 export type Result<T, E> = Ok<T, E> | Err<T, E>;
 
+/** Creates an `Ok`, returned as a `Result`. */
 export const Ok = <T, E = never>(value: T): Result<T, E> =>
 	make_result({ ok: true, value });
-
+/** Creates an `Err`, returned as a `Result`. */
 export const Err = <E, T = never>(error: E): Result<T, E> =>
 	make_result({ ok: false, error });
 
